@@ -1,19 +1,33 @@
 
-workflows:
-  android-build:
-    name: Android APK Build
-    max_build_duration: 120
-    instance_type: linux_x2
+name: Android APK Build
 
-    scripts:
-      - name: Set Android SDK
-        script: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
       - name: Build APK
-        script: |
+        run: |
           chmod +x gradlew
           ./gradlew assembleDebug
 
-    artifacts:
-      - app/build/outputs/apk/**/*.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-APK
+          path: app/build/outputs/apk/**/*.apk
